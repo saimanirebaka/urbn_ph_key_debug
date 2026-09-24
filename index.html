@@ -293,7 +293,7 @@ PH-8821-SC-12-FY26 NOV-8819203912</textarea>
 
         // Generate Query 1 (PH Key Query)
         function generateQuery1(phString) {
-            return `Select Item.[Planning Item], Item.[L1Key], Item.[L1] from urbnna.item_ph where Item.[Planning Item] = '${phString}';`;
+            return `Select `Item.[Planning Item]`, `Item.[L1Key]`, `Item.[L1]` from urbnna.item_ph where Item.[Planning Item] = '${phString}';`;
         }
 
         // Generate Query 2 (Product Master Query)
