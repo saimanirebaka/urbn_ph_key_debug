@@ -3,636 +3,688 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>String Code Converter & SQL Generator</title>
+    <title>Code Converter & SQL Generator v2.3.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        code, textarea, input.mono, .mono { font-family: 'JetBrains Mono', monospace; }
+        body {
+            background-color: #0b1120;
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .card {
+            background-color: #131c31;
+            border: 1px solid #1e293b;
+            border-radius: 0.75rem;
+        }
+        .code-box {
+            background-color: #090e1a;
+            border: 1px solid #1e293b;
+            border-radius: 0.5rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        .tab-active {
+            background-color: #2563eb;
+            color: #ffffff;
+            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
+        }
+        .tab-inactive {
+            background-color: #1e293b;
+            color: #94a3b8;
+        }
+        .tab-inactive:hover {
+            background-color: #283548;
+            color: #e2e8f0;
+        }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+<body class="min-h-screen p-4 md:p-8">
 
-    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-3.5 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="p-2 bg-brand-500/10 rounded-lg border border-brand-500/20 text-brand-500">
-                    <i class="fa-solid fa-code text-xl"></i>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 hidden transform transition-all duration-300 bg-emerald-600 text-white px-4 py-2.5 rounded-lg shadow-xl text-sm font-medium flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        <span id="toastMessage">Copied to clipboard!</span>
+    </div>
+
+    <div class="max-w-6xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+            <div class="flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-xl bg-blue-950/80 border border-blue-800/60 flex items-center justify-center text-blue-400 font-mono font-bold text-lg shadow-inner">
+                    &lt;/&gt;
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg leading-tight flex items-center gap-2">
-                        Code Converter & SQL Generator
-                        <span class="text-xs bg-brand-500/20 text-brand-500 border border-brand-500/30 px-2 py-0.5 rounded-full font-mono">v2.3.0</span>
-                    </h1>
-                    <p class="text-xs text-slate-400">Open-Source PH Key Transformer & IBPL Query Debugging Tool</p>
+                    <div class="flex items-center gap-2.5">
+                        <h1 class="text-xl font-bold text-white tracking-tight">Code Converter & SQL Generator</h1>
+                        <span class="px-2 py-0.5 text-xs font-mono font-semibold bg-blue-950 text-blue-300 border border-blue-800/60 rounded-full">v2.3.0</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-0.5">Open-Source PH Key Transformer & IBPL Query Debugging Tool</p>
                 </div>
             </div>
-            
-            <div class="flex items-center space-x-3">
-                <button id="themeToggleBtn" class="p-2.5 rounded-lg border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition" aria-label="Toggle Theme">
-                    <i class="fa-solid fa-sun hidden dark:block"></i>
-                    <i class="fa-solid fa-moon block dark:hidden"></i>
-                </button>
-            </div>
-        </div>
-    </header>
+        </header>
 
-    <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 space-y-6">
-
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-800/40 border border-slate-800 p-4 rounded-xl">
+        <!-- Navigation & Preset Bar -->
+        <div class="card p-3 flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-2">
-                <button id="singleModeBtn" class="px-4 py-2 text-sm font-semibold rounded-lg bg-brand-600 text-white shadow-sm transition">
-                    <i class="fa-solid fa-bolt mr-1.5"></i> Single Convert & SQL
+                <button id="btn-tab-single" onclick="switchTab('single')" class="tab-active px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 cursor-pointer">
+                    <span>⚡</span> Single Convert & SQL
                 </button>
-                <button id="bulkModeBtn" class="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200 transition">
-                    <i class="fa-solid fa-list-check mr-1.5"></i> Bulk Batch Generator
+                <button id="btn-tab-bulk" onclick="switchTab('bulk')" class="tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 cursor-pointer">
+                    <span>☰</span> Bulk Batch Generator
                 </button>
-                <button id="ibplModeBtn" class="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200 transition">
-                    <i class="fa-solid fa-code-branch mr-1.5"></i> IBPL Select Converter
+                <button id="btn-tab-ibpl" onclick="switchTab('ibpl')" class="tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 cursor-pointer">
+                    <span>⑂</span> IBPL Select Converter
                 </button>
             </div>
-            <div id="presetContainer" class="flex items-center gap-2 text-xs text-slate-400">
-                <span class="font-medium">Preset:</span>
-                <button onclick="loadPreset('PH-4111-SC-33-FY27 OCT-1786459079')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 hover:text-slate-200 border border-slate-700 rounded transition font-mono">SC Format Sample</button>
+
+            <div id="preset-container" class="flex items-center gap-2">
+                <span class="text-xs text-slate-400">Preset:</span>
+                <button onclick="loadSinglePreset()" class="px-3 py-1.5 text-xs font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-md transition cursor-pointer">
+                    SC Format Sample
+                </button>
             </div>
         </div>
 
-        <div id="singleView" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Input Card -->
-                <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center mb-3">
-                            <label class="block text-sm font-semibold text-slate-300">Input String</label>
-                            <span class="text-xs text-slate-500 font-mono">SC Code</span>
-                        </div>
-                        <div class="relative">
-                            <input type="text" id="singleInput" value="PH-4111-SC-33-FY27 OCT-1786459079" placeholder="e.g. PH-4111-SC-33-FY27 OCT-1786459079" class="mono w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition text-slate-100 placeholder-slate-600">
-                            <button id="clearSingleBtn" class="absolute right-3 top-3 text-slate-500 hover:text-slate-300 transition" aria-label="Clear Input">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </div>
+        <!-- ========================================== -->
+        <!-- TAB 1: SINGLE CONVERT & SQL                -->
+        <!-- ========================================== -->
+        <div id="view-single" class="space-y-6">
+            
+            <!-- Top Row: Input & Transformed Output -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Input String Card -->
+                <div class="card p-5 flex flex-col justify-between space-y-4">
+                    <div class="flex items-center justify-between">
+                        <label for="singleInput" class="text-sm font-semibold text-white">Input String</label>
+                        <span class="text-xs font-mono text-slate-400">SC Code</span>
+                    </div>
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="singleInput" 
+                            value="PH-4111-SC-33-FY27 OCT-1786459079"
+                            oninput="processSingle()"
+                            placeholder="e.g., PH-4111-SC-33-FY27 OCT-1786459079"
+                            class="w-full bg-[#090e1a] text-white font-mono text-sm px-4 py-3 pr-10 rounded-lg border border-blue-500/70 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition"
+                        />
+                        <button onclick="clearSingle()" title="Clear input" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer">
+                            ✕
+                        </button>
+                    </div>
+                    <div class="text-xs text-slate-500">
+                        Accepts standard hyphenated PH strings with or without <code class="text-slate-400">-1-</code> before FY.
                     </div>
                 </div>
 
-                <!-- Transformed String Output Card -->
-                <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center mb-3">
-                            <label class="block text-sm font-semibold text-brand-400">Transformed Key Output</label>
-                            <span id="validBadge" class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">Converted</span>
-                        </div>
-                        <div class="relative">
-                            <input type="text" id="singleOutput" readonly class="mono w-full px-4 py-3 bg-slate-950 border border-brand-500/40 rounded-xl text-brand-400 font-semibold outline-none select-all">
-                        </div>
+                <!-- Transformed Key Output Card -->
+                <div class="card p-5 flex flex-col justify-between space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-semibold text-white">Transformed Key Output</span>
+                        <span id="statusBadge" class="px-2.5 py-0.5 text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800/60 rounded-full">Converted</span>
                     </div>
-
-                    <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                        <span class="text-xs text-slate-500">Transformed key for Product Master</span>
-                        <button id="copySingleBtn" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-medium text-xs rounded-xl transition flex items-center gap-2 shadow-lg shadow-brand-600/20 active:scale-95">
-                            <i class="fa-regular fa-copy"></i>
-                            <span>Copy Key</span>
+                    <div id="singleTransformedOutput" class="code-box px-4 py-3 text-sm text-emerald-400 font-semibold min-h-[46px] flex items-center overflow-x-auto select-all">
+                        1PH4111SC331FY27OCT1786459079
+                    </div>
+                    <div class="flex items-center justify-between pt-1">
+                        <span class="text-xs text-slate-400">Transformed key for Product Master</span>
+                        <button onclick="copyElementText('singleTransformedOutput')" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow">
+                            <span>❐</span> Copy Key
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Query 1: PH Key Query -->
-                <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center mb-3">
-                            <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded text-xs font-semibold">Query 1</span>
-                                <h3 class="text-sm font-semibold text-slate-200">PH Key Query</h3>
-                            </div>
-                            <button id="copyQ1Btn" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5">
-                                <i class="fa-regular fa-copy"></i> Copy Query 1
-                            </button>
+            <!-- Middle Row: Query 1 & Query 2 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Query 1 -->
+                <div class="card p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2 py-0.5 text-xs font-semibold bg-amber-950/80 text-amber-400 border border-amber-800/60 rounded">Query 1</span>
+                            <h2 class="text-sm font-semibold text-white">PH Key Query</h2>
                         </div>
-                        <textarea id="query1Output" readonly rows="4" class="mono w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-amber-300 font-medium text-xs leading-relaxed resize-none outline-none select-all"></textarea>
+                        <button onclick="copyElementText('query1Output')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-md border border-slate-700 transition flex items-center gap-1.5 cursor-pointer">
+                            <span>❐</span> Copy Query 1
+                        </button>
                     </div>
+                    <pre id="query1Output" class="code-box p-4 text-xs text-amber-200/90 whitespace-pre-wrap break-all min-h-[96px] select-all"></pre>
                 </div>
 
-                <!-- Query 2: Product Master Query -->
-                <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center mb-3">
-                            <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-xs font-semibold">Query 2</span>
-                                <h3 class="text-sm font-semibold text-slate-200">Product Master Query</h3>
-                            </div>
-                            <button id="copyQ2Btn" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5">
-                                <i class="fa-regular fa-copy"></i> Copy Query 2
-                            </button>
+                <!-- Query 2 -->
+                <div class="card p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2 py-0.5 text-xs font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 rounded">Query 2</span>
+                            <h2 class="text-sm font-semibold text-white">Product Master Query</h2>
                         </div>
-                        <textarea id="query2Output" readonly rows="4" class="mono w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-emerald-300 font-medium text-xs leading-relaxed resize-none outline-none select-all"></textarea>
+                        <button onclick="copyElementText('query2Output')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-md border border-slate-700 transition flex items-center gap-1.5 cursor-pointer">
+                            <span>❐</span> Copy Query 2
+                        </button>
                     </div>
+                    <pre id="query2Output" class="code-box p-4 text-xs text-emerald-200/90 whitespace-pre-wrap break-all min-h-[96px] select-all"></pre>
                 </div>
             </div>
 
-            <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-5 space-y-3">
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded text-xs font-semibold">Query 3</span>
-                        <h3 class="text-sm font-semibold text-slate-200">Debugging Workspace Query</h3>
+            <!-- Bottom Row: Query 3 Debugging Workspace -->
+            <div class="card p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="px-2 py-0.5 text-xs font-semibold bg-purple-950/80 text-purple-300 border border-purple-800/60 rounded">Query 3</span>
+                        <h2 class="text-sm font-semibold text-white">Debugging Workspace Query</h2>
                     </div>
-                    <button id="copyQ3Btn" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5">
-                        <i class="fa-regular fa-copy"></i> Copy Query 3
+                    <button onclick="copyElementText('query3Output')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-md border border-slate-700 transition flex items-center gap-1.5 cursor-pointer">
+                        <span>❐</span> Copy Query 3
                     </button>
                 </div>
 
-                <!-- Rephrased Debugging Note Box -->
-                <div class="p-3.5 bg-slate-900/80 border border-purple-500/20 rounded-xl text-slate-300 text-xs leading-relaxed flex gap-3">
-                    <i class="fa-solid fa-circle-info text-purple-400 text-sm mt-0.5 shrink-0"></i>
+                <!-- Debugging Guide Banner -->
+                <div class="bg-purple-950/30 border border-purple-800/50 rounded-lg p-3.5 text-xs text-slate-300 flex items-start gap-2.5 leading-relaxed">
+                    <span class="text-purple-400 font-bold mt-0.5">ⓘ</span>
                     <div>
-                        <span class="font-semibold text-purple-300">Debugging Guide:</span> Pass the <code class="text-purple-200 bg-purple-950/80 border border-purple-500/30 px-1 py-0.5 rounded font-mono">q_sty_snum</code> value retrieved from <strong>Query 2</strong> into this query and run it within the debugging workspace. Compare the output against <code class="text-purple-200 bg-purple-950/80 border border-purple-500/30 px-1 py-0.5 rounded font-mono">o9_style_level_key</code>—if they do not match, the placeholder color has been assigned to an existing style rather than its original placeholder style.
+                        <strong class="text-purple-300">Debugging Guide:</strong> Pass the <code class="px-1.5 py-0.5 bg-purple-950 text-purple-200 border border-purple-700/60 rounded">q_sty_snum</code> value retrieved from <strong>Query 2</strong> into this query and run it within the debugging workspace. Compare the output <strong>Key</strong> column against <code class="px-1.5 py-0.5 bg-purple-950 text-purple-200 border border-purple-700/60 rounded">o9_style_level_key</code>—if they do not match, the placeholder color has been realized under an existing style rather than its original placeholder style.
                     </div>
                 </div>
 
-                <!-- Query 3 Code Display -->
-                <textarea id="query3Output" readonly rows="2" class="mono w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-purple-300 font-medium text-xs leading-relaxed resize-none outline-none select-all">select [Item].[L1].[q_sty_snum];</textarea>
+                <pre id="query3Output" class="code-box p-4 text-xs text-purple-200 select-all">select [Item].[L1].[q_sty_snum];</pre>
 
-                <!-- Visual Guide for Debugging Workspace Key Column -->
-                <div class="pt-2">
-                    <p class="text-xs text-slate-400 mb-2 font-medium"><i class="fa-solid fa-eye text-purple-400 mr-1.5"></i>Reference: Locate the <span class="text-amber-300 font-semibold">Key</span> column in the Grid view after executing Query 3:</p>
-                    <div class="inline-block bg-white p-2.5 rounded-xl border border-slate-700 shadow-lg overflow-hidden">
-                        <svg viewBox="0 0 460 155" class="w-full max-w-md h-auto font-sans" xmlns="http://www.w3.org/2000/svg">
-                            <!-- Query Bar -->
-                            <rect x="0" y="0" width="460" height="32" fill="#f8fafc" stroke="#94a3b8" stroke-width="1"/>
-                            <rect x="0" y="0" width="32" height="32" fill="#e2e8f0"/>
-                            <text x="16" y="21" font-size="12" fill="#475569" text-anchor="middle" font-family="monospace">1</text>
-                            <text x="44" y="21" font-size="13" font-family="monospace">
-                                <tspan fill="#2563eb">select</tspan>
-                                <tspan fill="#0f172a"> [Item].[L1].[</tspan>
-                                <tspan fill="#4f46e5">10041110212060000011</tspan>
-                                <tspan fill="#0f172a">];</tspan>
-                            </text>
-                            <!-- Tabs -->
-                            <rect x="0" y="46" width="56" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
-                            <rect x="0" y="46" width="56" height="3" fill="#0f172a"/>
-                            <text x="28" y="65" font-size="12" font-weight="600" fill="#0f172a" text-anchor="middle">Grid</text>
-                            <text x="86" y="65" font-size="12" fill="#64748b" text-anchor="middle">JSON</text>
-                            <text x="148" y="65" font-size="12" fill="#64748b" text-anchor="middle">History:</text>
-                            <line x1="0" y1="74" x2="460" y2="74" stroke="#cbd5e1" stroke-width="1"/>
-                            <!-- Grid Table Header -->
-                            <rect x="2" y="92" width="130" height="30" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
-                            <text x="12" y="112" font-size="13" font-weight="600" fill="#1e293b">Key</text>
-                            <polygon points="112,102 124,102 119,108 119,115 117,115 117,108" fill="#1e293b"/>
-                            <rect x="132" y="92" width="326" height="30" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
-                            <text x="142" y="112" font-size="13" font-weight="600" fill="#1e293b">Name</text>
-                            <polygon points="438,102 450,102 445,108 445,115 443,115 443,108" fill="#1e293b"/>
-                            <!-- Highlight Box around Key -->
-                            <rect x="2" y="91" width="130" height="32" fill="none" stroke="#facc15" stroke-width="4" rx="2"/>
-                            <!-- Grid Data Row -->
-                            <rect x="2" y="122" width="130" height="30" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
-                            <text x="12" y="142" font-size="13" fill="#0f172a" font-family="monospace">1186780</text>
-                            <rect x="132" y="122" width="326" height="30" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
-                            <text x="142" y="142" font-size="13" fill="#0f172a" font-family="monospace">10041110212060000011</text>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-        </div>
-                        <textarea id="bulkQ2Output" readonly rows="6" class="mono w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-emerald-300 font-medium text-xs leading-relaxed resize-none outline-none select-all"></textarea>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- IBPL Select Converter View -->
-        <div id="ibplView" class="hidden space-y-6">
-            <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-5 space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                        <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
-                            <span class="px-2 py-0.5 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded text-xs">IBPL Parser</span>
-                            Input IBPL <code class="text-brand-300">select (...) where {...};</code> Statement
-                        </h2>
-                        <p class="text-xs text-slate-400 mt-1">Converts <code class="text-slate-300">where {...}</code> member filters into cross-joins (<code class="text-slate-300">*</code>) and consolidates measure conditions into the measure tuple.</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button id="loadIbplSampleBtn" class="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg transition">
-                            <i class="fa-solid fa-flask mr-1 text-brand-400"></i> Load Sample
-                        </button>
-                        <button id="clearIbplBtn" class="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700 rounded-lg transition">
-                            <i class="fa-solid fa-eraser mr-1"></i> Clear
-                        </button>
-                    </div>
-                </div>
-
-                <textarea id="ibplInput" rows="5" class="mono w-full p-4 bg-slate-900 border border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-slate-100 text-xs leading-relaxed" placeholder="Paste your select (...) where {...}; IBPL query here...">select (&CWV * {Measure.[Export_Validation_SC],Measure.[Intermittent_Measure_SC]}) where {&StyleColor.Filter(#.Name in {[100012306456900000190010],[PH-0123-SC-E19-1-FY28 APR-1795105082],[PH-0123-SC-E19-2-FY28 APR-1795105082]}) , [Sales Domain].[Sales Planning Channel].Filter(#.Name in {[100002],[100001]}) , [Receipt Drop].[Receipt Drop].Filter(#.Name in {[R1]}) , [Time].[Planning Month].Filter(#.Name in {[20281103]}) , &SellingSeasons, Measure.[Intermittent_Measure_SC] == true || Measure.[Export_Validation_SC] == "Validation Failed" || Measure.[Export_In_Progress_SC] == true};</textarea>
-            </div>
-
-            <!-- Converted Output Card -->
-            <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-5 space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div class="flex items-center gap-2">
-                        <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-xs font-semibold">Converted Query</span>
-                        <span id="ibplStatusBadge" class="text-xs text-slate-400">Ready</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <div class="inline-flex rounded-lg bg-slate-900 p-0.5 border border-slate-700">
-                            <button id="ibplCompactBtn" class="px-2.5 py-1 text-xs font-medium rounded-md bg-brand-600 text-white transition">Compact</button>
-                            <button id="ibplFormattedBtn" class="px-2.5 py-1 text-xs font-medium rounded-md text-slate-400 hover:text-slate-200 transition">Multi-line</button>
+                <!-- Visual Reference Guide -->
+                <div class="pt-2 space-y-2">
+                    <p class="text-xs text-slate-400 flex items-center gap-1.5">
+                        <span class="text-purple-400">👁</span> Reference: Locate the <strong class="text-amber-400">Key</strong> column in the Grid view after executing Query 3:
+                    </p>
+                    <div class="inline-block bg-white rounded-lg p-2 border border-slate-700 shadow-lg max-w-md">
+                        <div class="border border-slate-300 rounded text-[11px] font-mono bg-slate-100 px-2.5 py-1.5 text-slate-800 mb-2">
+                            <span class="text-slate-400 mr-2">1</span><span class="text-blue-700">select</span> [Item].[L1].[<span class="text-blue-600">10041110212060000011</span>];
                         </div>
-                        <button id="copyIbplBtn" class="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-500 text-white font-medium text-xs rounded-lg transition flex items-center gap-1.5 shadow-lg shadow-brand-600/20 active:scale-95">
-                            <i class="fa-regular fa-copy"></i> Copy Query
-                        </button>
+                        <div class="flex border-b border-slate-300 text-[11px] font-sans font-semibold text-slate-600 mb-1">
+                            <div class="px-3 py-1 border-t-2 border-slate-900 bg-white text-slate-900">Grid</div>
+                            <div class="px-3 py-1">JSON</div>
+                            <div class="px-3 py-1">History:</div>
+                        </div>
+                        <table class="w-full text-left border-collapse font-sans text-xs text-slate-800">
+                            <thead>
+                                <tr>
+                                    <th class="border-2 border-yellow-400 bg-yellow-50/60 px-2.5 py-1 font-semibold">Key <span class="float-right text-slate-600">▼</span></th>
+                                    <th class="border border-slate-300 px-2.5 py-1 font-semibold">Name <span class="float-right text-slate-600">▼</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border border-slate-300 px-2.5 py-1 font-mono">1186780</td>
+                                    <td class="border border-slate-300 px-2.5 py-1 font-mono">10041110212060000011</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-
-                <textarea id="ibplOutput" readonly rows="6" class="mono w-full p-4 bg-slate-950 border border-emerald-500/40 rounded-xl text-emerald-300 font-medium text-xs leading-relaxed outline-none select-all"></textarea>
             </div>
         </div>
 
-    </main>
+        <!-- ========================================== -->
+        <!-- TAB 2: BULK BATCH GENERATOR                -->
+        <!-- ========================================== -->
+        <div id="view-bulk" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Bulk Input -->
+                <div class="card p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label for="bulkInput" class="text-sm font-semibold text-white">Paste Multiple PH Keys (One per line)</label>
+                        <div class="flex gap-2">
+                            <button onclick="loadBulkSample()" class="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 cursor-pointer">Load Sample</button>
+                            <button onclick="clearBulk()" class="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 cursor-pointer">Clear</button>
+                        </div>
+                    </div>
+                    <textarea 
+                        id="bulkInput" 
+                        rows="6" 
+                        oninput="processBulk()"
+                        placeholder="PH-4111-SC-33-FY27 OCT-1786459079&#10;PH-0123-SC-E19-FY28 APR-1795105082"
+                        class="w-full bg-[#090e1a] text-white font-mono text-xs p-3.5 rounded-lg border border-slate-700 focus:outline-none focus:border-blue-500"
+                    >PH-4111-SC-33-FY27 OCT-1786459079
+PH-0123-SC-E19-FY28 APR-1795105082</textarea>
+                </div>
 
-    <div id="toast" class="fixed bottom-6 right-6 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 font-medium text-sm transition-all duration-300 transform translate-y-20 opacity-0 z-50">
-        <i class="fa-solid fa-circle-check"></i>
-        <span id="toastMsg">Copied to clipboard!</span>
+                <!-- Bulk Transformed Keys -->
+                <div class="card p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-semibold text-white">Transformed Keys (<span id="bulkCount">0</span>)</span>
+                        <button onclick="copyElementText('bulkKeysOutput')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-md transition cursor-pointer">
+                            ❐ Copy All Keys
+                        </button>
+                    </div>
+                    <pre id="bulkKeysOutput" class="code-box p-3.5 text-xs text-emerald-400 h-[146px] overflow-y-auto select-all"></pre>
+                </div>
+            </div>
+
+            <!-- Bulk SQL Queries -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-semibold text-amber-400">Batch Query 1 (urbnna.item_ph)</span>
+                        <button onclick="copyElementText('bulkQuery1Output')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-md border border-slate-700 cursor-pointer">❐ Copy SQL</button>
+                    </div>
+                    <pre id="bulkQuery1Output" class="code-box p-4 text-xs text-amber-200/90 whitespace-pre-wrap break-all min-h-[110px] select-all"></pre>
+                </div>
+
+                <div class="card p-5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-semibold text-emerald-400">Batch Query 2 (Product Master)</span>
+                        <button onclick="copyElementText('bulkQuery2Output')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-md border border-slate-700 cursor-pointer">❐ Copy SQL</button>
+                    </div>
+                    <pre id="bulkQuery2Output" class="code-box p-4 text-xs text-emerald-200/90 whitespace-pre-wrap break-all min-h-[110px] select-all"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: IBPL SELECT CONVERTER               -->
+        <!-- ========================================== -->
+        <div id="view-ibpl" class="hidden space-y-6">
+            <div class="card p-5 space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <h2 class="text-sm font-semibold text-white">IBPL Select Query Restructuring</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Converts <code class="text-blue-400">where { ... }</code> filters into cross-joined (<code class="text-blue-400">*</code>) tuples and merges condition measures into the select tuple.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="loadIbplSample()" class="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md border border-slate-700 cursor-pointer">Load Sample</button>
+                        <button onclick="clearIbpl()" class="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md border border-slate-700 cursor-pointer">Clear</button>
+                    </div>
+                </div>
+
+                <!-- Before Input -->
+                <div class="space-y-2">
+                    <label for="ibplInput" class="text-xs font-semibold uppercase tracking-wider text-slate-400">Before (Input IBPL Select with WHERE clause)</label>
+                    <textarea 
+                        id="ibplInput" 
+                        rows="5" 
+                        oninput="processIbpl()"
+                        placeholder="Paste your IBPL select statement with where {...};"
+                        class="w-full bg-[#090e1a] text-slate-200 font-mono text-xs p-4 rounded-lg border border-slate-700 focus:outline-none focus:border-blue-500 leading-relaxed"
+                    >select (&CWV * {Measure.[Export_Validation_SC],Measure.[Intermittent_Measure_SC]}) where {&StyleColor.Filter(#.Name in {[100012306456900000190010],[PH-0123-SC-E19-1-FY28 APR-1795105082],[PH-0123-SC-E19-2-FY28 APR-1795105082]}) , [Sales Domain].[Sales Planning Channel].Filter(#.Name in {[100002],[100001]}) , [Receipt Drop].[Receipt Drop].Filter(#.Name in {[R1]}) , [Time].[Planning Month].Filter(#.Name in {[20281103]}) , &SellingSeasons, Measure.[Intermittent_Measure_SC] == true || Measure.[Export_Validation_SC] == "Validation Failed" || Measure.[Export_In_Progress_SC] == true};</textarea>
+                </div>
+
+                <!-- After Output -->
+                <div class="space-y-2 pt-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-emerald-400">After (Converted Cross-Join IBPL Select)</label>
+                        <button onclick="copyElementText('ibplOutput')" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow">
+                            <span>❐</span> Copy Converted Query
+                        </button>
+                    </div>
+                    <pre id="ibplOutput" class="code-box p-4 text-xs text-emerald-300 whitespace-pre-wrap break-all min-h-[110px] leading-relaxed select-all"></pre>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
-        <p>Open-Source String Transformation & Query Generator Web Utility</p>
-    </footer>
-
     <script>
-        // Formats input string specifically for PH Key Query:
-        // PH-4111-SC-33-FY27 OCT-1786459079 -> PH-4111-SC-33-1-FY27 OCT-1786459079
-        function formatPHString(input) {
-            if (!input || typeof input !== 'string') return '';
-            const trimmed = input.trim();
-            if (!trimmed) return '';
-
-            // If string already contains '-1-FY', retain format
-            if (trimmed.includes('-1-FY') || trimmed.includes('-1-fy')) {
-                return trimmed;
+        // ==========================================
+        // 1. TAB NAVIGATION
+        // ==========================================
+        function switchTab(tabName) {
+            var tabs = ['single', 'bulk', 'ibpl'];
+            for (var i = 0; i < tabs.length; i++) {
+                var t = tabs[i];
+                var view = document.getElementById('view-' + t);
+                var btn = document.getElementById('btn-tab-' + t);
+                if (t === tabName) {
+                    view.classList.remove('hidden');
+                    btn.classList.remove('tab-inactive');
+                    btn.classList.add('tab-active');
+                } else {
+                    view.classList.add('hidden');
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('tab-inactive');
+                }
             }
-
-            // Standard regex match for standard PH pattern
-            const regex = /^([A-Z0-9]+)-([0-9]+)-(SC)-([0-9]+)-(FY[0-9]+\s+[A-Z]+-[0-9]+)$/i;
-            const match = trimmed.match(regex);
-
-            if (match) {
-                const [_, type, code, style, num, rest] = match;
-                return `${type}-${code}-${style.toUpperCase()}-${num}-1-${rest}`;
+            var presetContainer = document.getElementById('preset-container');
+            if (tabName === 'single') {
+                presetContainer.classList.remove('hidden');
+            } else {
+                presetContainer.classList.add('hidden');
             }
-
-            // Fallback insertion rule
-            return trimmed.replace(/-FY/gi, '-1-FY');
-        }
-
-        // Transforms input into Key Output for Query 2:
-        // PH-4111-SC-33-FY27 OCT-1786459079 -> 1PH4111SC331FY27OCT1786459079
-        function transformString(input) {
-            if (!input || typeof input !== 'string') return '';
-            const trimmed = input.trim();
-            if (!trimmed) return '';
-
-            // Match full standard SC input pattern
-            const regex = /^([A-Z0-9]+)-([0-9]+)-(SC)-([0-9]+)-(?:1-)?(FY[0-9]+)\s+([A-Z]+)-([0-9]+)$/i;
-            const match = trimmed.match(regex);
-
-            if (match) {
-                const [_, type, code, style, num, year, month, id] = match;
-                return `1${type}${code}${style.toUpperCase()}${num}1${year}${month}${id}`;
-            }
-
-            // Generic Fallback logic
-            let fallback = trimmed
-                .replace(/-FY/gi, '1FY')
-                .replace(/[\s-]/g, '');
-
-            if (!fallback.startsWith('1')) {
-                fallback = '1' + fallback;
-            }
-            return fallback;
-        }
-
-        // Generate Query 1 (PH Key Query)
-        function generateQuery1(phString) {
-            return `Select \`Item.[Planning Item]\`, \`Item.[L1Key]\`, \`Item.[L1]\` from urbnna.item_ph where \`Item.[Planning Item]\` = '${phString}';`;
-        }
-
-        // Generate Query 2 (Product Master Query)
-        function generateQuery2(transformedKey) {
-            return `Select distinct o9_color_level_key,stylecolor_snum, o9_style_level_key, q_sty_snum from std_prod.std_global_all_product where o9_color_level_key = '${transformedKey}';`;
         }
 
         // ==========================================
-        // IBPL Select Where -> Cross-Join Converter
+        // 2. PH KEY TRANSFORMATION LOGIC
         // ==========================================
-        const SAMPLE_IBPL_QUERY = `select (&CWV * {Measure.[Export_Validation_SC],Measure.[Intermittent_Measure_SC]}) where {&StyleColor.Filter(#.Name in {[100012306456900000190010],[PH-0123-SC-E19-1-FY28 APR-1795105082],[PH-0123-SC-E19-2-FY28 APR-1795105082]}) , [Sales Domain].[Sales Planning Channel].Filter(#.Name in {[100002],[100001]}) , [Receipt Drop].[Receipt Drop].Filter(#.Name in {[R1]}) , [Time].[Planning Month].Filter(#.Name in {[20281103]}) , &SellingSeasons, Measure.[Intermittent_Measure_SC] == true || Measure.[Export_Validation_SC] == "Validation Failed" || Measure.[Export_In_Progress_SC] == true};`;
+        function parsePhKey(rawInput) {
+            var clean = (rawInput || '').trim();
+            if (!clean) {
+                return { valid: false, query1Key: '', transformedKey: '' };
+            }
 
-        let ibplFormatMode = 'compact'; // 'compact' | 'multiline'
+            // Ensure "-1-" exists right before "FY" for Query 1 format
+            // Example: PH-4111-SC-33-FY27 OCT-1786459079 -> PH-4111-SC-33-1-FY27 OCT-1786459079
+            var query1Key = clean;
+            if (/-FY/i.test(query1Key) && !/-1-FY/i.test(query1Key)) {
+                query1Key = query1Key.replace(/-FY/i, '-1-FY');
+            }
 
-        // Splits a string by a delimiter character only at top-level nesting depth
-        function splitTopLevel(str, delimiter) {
-            const parts = [];
-            let current = '';
-            let curly = 0;
-            let square = 0;
-            let paren = 0;
-            let inDoubleQuote = false;
-            let inSingleQuote = false;
+            // Build transformed key: prepend '1' if not already starting with '1', strip hyphens & spaces
+            var stripped = query1Key.replace(/[-\s]+/g, '');
+            var transformedKey = stripped.charAt(0) === '1' ? stripped : '1' + stripped;
 
-            for (let i = 0; i < str.length; i++) {
-                const ch = str[i];
-                const prev = i > 0 ? str[i - 1] : '';
+            return {
+                valid: true,
+                query1Key: query1Key,
+                transformedKey: transformedKey
+            };
+        }
 
-                if (ch === '"' && !inSingleQuote && prev !== '\\') {
-                    inDoubleQuote = !inDoubleQuote;
-                } else if (ch === "'" && !inDoubleQuote && prev !== '\\') {
-                    inSingleQuote = !inSingleQuote;
-                } else if (!inDoubleQuote && !inSingleQuote) {
-                    if (ch === '{') curly++;
-                    else if (ch === '}') curly = Math.max(0, curly - 1);
-                    else if (ch === '[') square++;
-                    else if (ch === ']') square = Math.max(0, square - 1);
-                    else if (ch === '(') paren++;
-                    else if (ch === ')') paren = Math.max(0, paren - 1);
+        function buildQuery1(phString) {
+            if (!phString) return '';
+            return "Select `Item.[Planning Item]`, `Item.[L1Key]`, `Item.[L1]` from urbnna.item_ph where `Item.[Planning Item]` = '" + phString + "';";
+        }
+
+        function buildQuery2(transformedKey) {
+            if (!transformedKey) return '';
+            return "Select distinct o9_color_level_key, stylecolor_snum, o9_style_level_key, q_sty_snum from std_prod.std_global_all_product where o9_color_level_key = '" + transformedKey + "';";
+        }
+
+        // ==========================================
+        // 3. SINGLE CONVERTER HANDLERS
+        // ==========================================
+        function processSingle() {
+            var inputVal = document.getElementById('singleInput').value;
+            var parsed = parsePhKey(inputVal);
+            var badge = document.getElementById('statusBadge');
+
+            if (!parsed.valid) {
+                document.getElementById('singleTransformedOutput').textContent = '';
+                document.getElementById('query1Output').textContent = '';
+                document.getElementById('query2Output').textContent = '';
+                badge.textContent = 'Waiting for input';
+                badge.className = 'px-2.5 py-0.5 text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700 rounded-full';
+                return;
+            }
+
+            document.getElementById('singleTransformedOutput').textContent = parsed.transformedKey;
+            document.getElementById('query1Output').textContent = buildQuery1(parsed.query1Key);
+            document.getElementById('query2Output').textContent = buildQuery2(parsed.transformedKey);
+
+            badge.textContent = 'Converted';
+            badge.className = 'px-2.5 py-0.5 text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800/60 rounded-full';
+        }
+
+        function loadSinglePreset() {
+            document.getElementById('singleInput').value = 'PH-4111-SC-33-FY27 OCT-1786459079';
+            processSingle();
+        }
+
+        function clearSingle() {
+            document.getElementById('singleInput').value = '';
+            processSingle();
+        }
+
+        // ==========================================
+        // 4. BULK BATCH HANDLERS
+        // ==========================================
+        function processBulk() {
+            var rawText = document.getElementById('bulkInput').value;
+            var lines = rawText.split(/\r?\n/);
+            var q1List = [];
+            var q2List = [];
+
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i].trim();
+                if (line.length > 0) {
+                    var parsed = parsePhKey(line);
+                    if (parsed.valid) {
+                        q1List.push("'" + parsed.query1Key + "'");
+                        q2List.push("'" + parsed.transformedKey + "'");
+                    }
+                }
+            }
+
+            document.getElementById('bulkCount').textContent = q2List.length;
+
+            if (q2List.length === 0) {
+                document.getElementById('bulkKeysOutput').textContent = '';
+                document.getElementById('bulkQuery1Output').textContent = '';
+                document.getElementById('bulkQuery2Output').textContent = '';
+                return;
+            }
+
+            // Plain keys without quotes for easy copying
+            var plainKeys = [];
+            for (var j = 0; j < q2List.length; j++) {
+                plainKeys.push(q2List[j].replace(/'/g, ''));
+            }
+
+            document.getElementById('bulkKeysOutput').textContent = plainKeys.join('\n');
+            document.getElementById('bulkQuery1Output').textContent =
+                "Select `Item.[Planning Item]`, `Item.[L1Key]`, `Item.[L1]` from urbnna.item_ph where `Item.[Planning Item]` IN (" + q1List.join(', ') + ");";
+            document.getElementById('bulkQuery2Output').textContent =
+                "Select distinct o9_color_level_key, stylecolor_snum, o9_style_level_key, q_sty_snum from std_prod.std_global_all_product where o9_color_level_key IN (" + q2List.join(', ') + ");";
+        }
+
+        function loadBulkSample() {
+            document.getElementById('bulkInput').value = "PH-4111-SC-33-FY27 OCT-1786459079\nPH-0123-SC-E19-FY28 APR-1795105082";
+            processBulk();
+        }
+
+        function clearBulk() {
+            document.getElementById('bulkInput').value = '';
+            processBulk();
+        }
+
+        // ==========================================
+        // 5. IBPL SELECT CONVERTER LOGIC
+        // ==========================================
+        function splitTopLevelCommas(str) {
+            var items = [];
+            var current = '';
+            var braceDepth = 0;
+            var parenDepth = 0;
+            var bracketDepth = 0;
+            var inQuotes = false;
+            var quoteChar = '';
+
+            for (var i = 0; i < str.length; i++) {
+                var ch = str[i];
+
+                if (inQuotes) {
+                    current += ch;
+                    if (ch === quoteChar && str[i - 1] !== '\\') {
+                        inQuotes = false;
+                    }
+                    continue;
                 }
 
-                if (!inDoubleQuote && !inSingleQuote && curly === 0 && square === 0 && paren === 0 && ch === delimiter) {
-                    parts.push(current.trim());
+                if (ch === '"' || ch === "'") {
+                    inQuotes = true;
+                    quoteChar = ch;
+                    current += ch;
+                } else if (ch === '{') {
+                    braceDepth++;
+                    current += ch;
+                } else if (ch === '}') {
+                    braceDepth--;
+                    current += ch;
+                } else if (ch === '(') {
+                    parenDepth++;
+                    current += ch;
+                } else if (ch === ')') {
+                    parenDepth--;
+                    current += ch;
+                } else if (ch === '[') {
+                    bracketDepth++;
+                    current += ch;
+                } else if (ch === ']') {
+                    bracketDepth--;
+                    current += ch;
+                } else if (ch === ',' && braceDepth === 0 && parenDepth === 0 && bracketDepth === 0) {
+                    if (current.trim()) {
+                        items.push(current.trim());
+                    }
                     current = '';
                 } else {
                     current += ch;
                 }
             }
             if (current.trim()) {
-                parts.push(current.trim());
+                items.push(current.trim());
             }
-            return parts;
+            return items;
         }
 
-        // Finds matching closing delimiter starting from openIndex
-        function findMatchingClose(str, openIndex, openChar, closeChar) {
-            let depth = 0;
-            let inDoubleQuote = false;
-            let inSingleQuote = false;
+        function processIbpl() {
+            var raw = (document.getElementById('ibplInput').value || '').trim();
+            var outputEl = document.getElementById('ibplOutput');
 
-            for (let i = openIndex; i < str.length; i++) {
-                const ch = str[i];
-                const prev = i > 0 ? str[i - 1] : '';
-
-                if (ch === '"' && !inSingleQuote && prev !== '\\') {
-                    inDoubleQuote = !inDoubleQuote;
-                } else if (ch === "'" && !inDoubleQuote && prev !== '\\') {
-                    inSingleQuote = !inSingleQuote;
-                } else if (!inDoubleQuote && !inSingleQuote) {
-                    if (ch === openChar) depth++;
-                    else if (ch === closeChar) {
-                        depth--;
-                        if (depth === 0) return i;
-                    }
-                }
-            }
-            return -1;
-        }
-
-        function convertIbplQuery(rawInput) {
-            const trimmed = (rawInput || '').trim();
-            if (!trimmed) {
-                return { output: '', error: 'Enter an IBPL select statement above.' };
+            if (!raw) {
+                outputEl.textContent = '';
+                return;
             }
 
-            const selectMatch = trimmed.match(/^select\s*\(/i);
-            if (!selectMatch) {
-                return { output: '', error: 'Query must begin with select (...)' };
-            }
-
-            const selectOpenParen = trimmed.indexOf('(');
-            const selectCloseParen = findMatchingClose(trimmed, selectOpenParen, '(', ')');
-            if (selectCloseParen === -1) {
-                return { output: '', error: 'Unmatched parenthesis in select (...)' };
-            }
-
-            const selectInner = trimmed.slice(selectOpenParen + 1, selectCloseParen).trim();
-            const afterSelect = trimmed.slice(selectCloseParen + 1).trim();
-
-            // Check if there is a where {...} block
-            const whereMatch = afterSelect.match(/^where\s*\{/i);
+            // Locate "where" keyword outside brackets
+            var whereMatch = raw.match(/\bwhere\b/i);
             if (!whereMatch) {
-                return { output: trimmed, error: 'No where {...} block found to convert.' };
+                outputEl.textContent = raw;
+                return;
             }
 
-            const whereOpenBrace = afterSelect.indexOf('{');
-            const whereCloseBrace = findMatchingClose(afterSelect, whereOpenBrace, '{', '}');
-            if (whereCloseBrace === -1) {
-                return { output: '', error: 'Unmatched curly brace in where {...}' };
+            var whereIndex = whereMatch.index;
+            var selectPart = raw.substring(0, whereIndex).trim();
+            var wherePart = raw.substring(whereIndex + 5).trim();
+
+            // Strip trailing semicolon from wherePart
+            if (wherePart.endsWith(';')) {
+                wherePart = wherePart.slice(0, -1).trim();
             }
 
-            const whereInner = afterSelect.slice(whereOpenBrace + 1, whereCloseBrace).trim();
+            // Strip outer curly braces { ... } of the where clause
+            if (wherePart.startsWith('{') && wherePart.endsWith('}')) {
+                wherePart = wherePart.slice(1, -1).trim();
+            }
 
-            // 1. Parse select (...) factors
-            const selectFactors = splitTopLevel(selectInner, '*');
-            const baseFactors = [];
-            const uniqueMeasures = [];
+            // Extract leading prefix (e.g. "&CWV") and existing measures tuple from selectPart
+            // Expected selectPart format: select (&CWV * {Measure.[A], Measure.[B]})
+            var prefix = '&CWV';
+            var measures = [];
 
-            const addMeasure = (m) => {
-                const clean = m.trim();
-                if (clean && !uniqueMeasures.includes(clean)) {
-                    uniqueMeasures.push(clean);
+            var selectInnerMatch = selectPart.match(/^select\s*\(([\s\S]*)\)$/i);
+            if (selectInnerMatch) {
+                var inner = selectInnerMatch[1].trim();
+                var measureBraceStart = inner.indexOf('{');
+                var measureBraceEnd = inner.lastIndexOf('}');
+                if (measureBraceStart !== -1 && measureBraceEnd !== -1) {
+                    var beforeBrace = inner.substring(0, measureBraceStart).trim();
+                    if (beforeBrace.endsWith('*')) {
+                        beforeBrace = beforeBrace.slice(0, -1).trim();
+                    }
+                    if (beforeBrace) {
+                        prefix = beforeBrace;
+                    }
+                    var initialMeasuresStr = inner.substring(measureBraceStart + 1, measureBraceEnd).trim();
+                    var initialMeasures = splitTopLevelCommas(initialMeasuresStr);
+                    for (var m = 0; m < initialMeasures.length; m++) {
+                        if (measures.indexOf(initialMeasures[m]) === -1) {
+                            measures.push(initialMeasures[m]);
+                        }
+                    }
                 }
-            };
-
-            for (const factor of selectFactors) {
-                if (factor.startsWith('{') && factor.endsWith('}') && /Measure\.\[[^\]]+\]/i.test(factor)) {
-                    const innerTuple = factor.slice(1, -1);
-                    const items = splitTopLevel(innerTuple, ',');
-                    items.forEach(item => addMeasure(item));
-                } else {
-                    baseFactors.push(factor);
-                }
             }
 
-            // 2. Parse top-level where {...} clauses
-            const whereItems = splitTopLevel(whereInner, ',');
-            const filterExpressions = [];
-            const booleanOpRegex = /(==|!=|>=|<=|>|<|\|\||&&)/;
+            // Parse top-level comma-separated clauses in the WHERE block
+            var whereClauses = splitTopLevelCommas(wherePart);
+            var dimensionFilters = [];
 
-            for (const item of whereItems) {
-                if (booleanOpRegex.test(item)) {
-                    // Extract any Measure.[...] references inside boolean condition
-                    const measureMatches = item.match(/Measure\.\[[^\]]+\]/g);
+            for (var c = 0; c < whereClauses.length; c++) {
+                var clause = whereClauses[c];
+                // Check if this clause is a boolean measure condition (contains ==, !=, <, >, &&, ||)
+                if (/==|!=|<=|>=|<|>|\&\&|\|\|/.test(clause) && !/\.Filter\s*\(/i.test(clause)) {
+                    var measureMatches = clause.match(/Measure\.\[[^\]]+\]/g);
                     if (measureMatches) {
-                        measureMatches.forEach(m => addMeasure(m));
+                        for (var mm = 0; mm < measureMatches.length; mm++) {
+                            if (measures.indexOf(measureMatches[mm]) === -1) {
+                                measures.push(measureMatches[mm]);
+                            }
+                        }
                     }
                 } else {
-                    filterExpressions.push(item);
+                    dimensionFilters.push(clause);
                 }
             }
 
-            // 3. Reconstruct cross-join query
-            const allParts = [...baseFactors, ...filterExpressions];
-            if (uniqueMeasures.length > 0) {
-                // Format measure tuple cleanly
-                const measureTuple = `{${uniqueMeasures.join(', ')}}`;
-                allParts.push(measureTuple);
+            // Assemble final cross-joined IBPL select statement
+            var parts = [prefix];
+            for (var d = 0; d < dimensionFilters.length; d++) {
+                parts.push(dimensionFilters[d]);
             }
+            parts.push(' {' + measures.join(', ') + '}');
 
-            let finalQuery = '';
-            if (ibplFormatMode === 'multiline') {
-                finalQuery = `select (\n  ${allParts.join('\n  * ')}\n);`;
+            var finalQuery = 'select (' + parts.join(' * ') + ');';
+            outputEl.textContent = finalQuery;
+        }
+
+        function loadIbplSample() {
+            document.getElementById('ibplInput').value =
+                'select (&CWV * {Measure.[Export_Validation_SC],Measure.[Intermittent_Measure_SC]}) where {&StyleColor.Filter(#.Name in {[100012306456900000190010],[PH-0123-SC-E19-1-FY28 APR-1795105082],[PH-0123-SC-E19-2-FY28 APR-1795105082]}) , [Sales Domain].[Sales Planning Channel].Filter(#.Name in {[100002],[100001]}) , [Receipt Drop].[Receipt Drop].Filter(#.Name in {[R1]}) , [Time].[Planning Month].Filter(#.Name in {[20281103]}) , &SellingSeasons, Measure.[Intermittent_Measure_SC] == true || Measure.[Export_Validation_SC] == "Validation Failed" || Measure.[Export_In_Progress_SC] == true};';
+            processIbpl();
+        }
+
+        function clearIbpl() {
+            document.getElementById('ibplInput').value = '';
+            processIbpl();
+        }
+
+        // ==========================================
+        // 6. CLIPBOARD & TOAST UTILITIES
+        // ==========================================
+        function copyElementText(elementId) {
+            var el = document.getElementById(elementId);
+            var text = (el.textContent || el.innerText || '').trim();
+            if (!text) {
+                showToast('Nothing to copy!');
+                return;
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function() {
+                    showToast('Copied to clipboard!');
+                }).catch(function() {
+                    fallbackCopy(text);
+                });
             } else {
-                finalQuery = `select (${allParts.join(' * ')});`;
-            }
-
-            return {
-                output: finalQuery,
-                stats: `${filterExpressions.length} filter(s) merged • ${uniqueMeasures.length} unique measure(s)`
-            };
-        }
-// ... existing code ... -->
-        // Bulk Mode Converter Trigger
-        function runBulkConversion() {
-            const lines = bulkInput.value.split('\n').map(l => l.trim()).filter(Boolean);
-            lineCount.textContent = `${lines.length} items`;
-
-            const phStrings = lines.map(l => formatPHString(l));
-            const transformedKeys = lines.map(l => transformString(l));
-
-            bulkKeysOutput.value = transformedKeys.join('\n');
-
-            const phInList = phStrings.map(s => `'${s}'`).join(',\n  ');
-            const keyInList = transformedKeys.map(k => `'${k}'`).join(',\n  ');
-
-            bulkQ1Output.value = `Select \`Item.[Planning Item]\`, \`Item.[L1Key]\`, \`Item.[L1]\`\nfrom urbnna.item_ph\nwhere \`Item.[Planning Item]\` IN (\n  ${phInList}\n);`;
-            bulkQ2Output.value = `Select distinct o9_color_level_key, stylecolor_snum, o9_style_level_key, q_sty_snum\nfrom std_prod.std_global_all_product\nwhere o9_color_level_key IN (\n  ${keyInList}\n);`;
-        }
-
-        // IBPL Converter Trigger
-        const ibplInput = document.getElementById('ibplInput');
-        const ibplOutput = document.getElementById('ibplOutput');
-        const ibplStatusBadge = document.getElementById('ibplStatusBadge');
-
-        function runIbplConversion() {
-            const result = convertIbplQuery(ibplInput.value);
-            ibplOutput.value = result.output;
-            if (result.error) {
-                ibplStatusBadge.textContent = result.error;
-                ibplStatusBadge.className = 'text-xs text-amber-400';
-            } else {
-                ibplStatusBadge.textContent = result.stats || 'Converted';
-                ibplStatusBadge.className = 'text-xs text-emerald-400';
+                fallbackCopy(text);
             }
         }
-// ... existing code ... -->
-        document.getElementById('copyBulkKeysBtn').addEventListener('click', () => copyToClipboard(bulkKeysOutput.value, 'Bulk Keys'));
-        document.getElementById('copyBulkQ1Btn').addEventListener('click', () => copyToClipboard(bulkQ1Output.value, 'Bulk SQL Query 1'));
-        document.getElementById('copyBulkQ2Btn').addEventListener('click', () => copyToClipboard(bulkQ2Output.value, 'Bulk SQL Query 2'));
 
-        // IBPL Event Listeners
-        ibplInput.addEventListener('input', runIbplConversion);
-        document.getElementById('copyIbplBtn').addEventListener('click', () => copyToClipboard(ibplOutput.value, 'Converted IBPL Query'));
-        document.getElementById('loadIbplSampleBtn').addEventListener('click', () => {
-            ibplInput.value = SAMPLE_IBPL_QUERY;
-            runIbplConversion();
-            showToast('Sample IBPL query loaded!');
+        function fallbackCopy(text) {
+            var temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            showToast('Copied to clipboard!');
+        }
+
+        var toastTimer = null;
+        function showToast(msg) {
+            var toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = msg;
+            toast.classList.remove('hidden');
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(function() {
+                toast.classList.add('hidden');
+            }, 2200);
+        }
+
+        // ==========================================
+        // 7. INITIALIZE ALL VIEWS ON PAGE LOAD
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', function() {
+            processSingle();
+            processBulk();
+            processIbpl();
         });
-        document.getElementById('clearIbplBtn').addEventListener('click', () => {
-            ibplInput.value = '';
-            runIbplConversion();
-            ibplInput.focus();
-        });
-
-        const ibplCompactBtn = document.getElementById('ibplCompactBtn');
-        const ibplFormattedBtn = document.getElementById('ibplFormattedBtn');
-
-        ibplCompactBtn.addEventListener('click', () => {
-            ibplFormatMode = 'compact';
-            ibplCompactBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md bg-brand-600 text-white transition';
-            ibplFormattedBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md text-slate-400 hover:text-slate-200 transition';
-            runIbplConversion();
-        });
-
-        ibplFormattedBtn.addEventListener('click', () => {
-            ibplFormatMode = 'multiline';
-            ibplFormattedBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md bg-brand-600 text-white transition';
-            ibplCompactBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md text-slate-400 hover:text-slate-200 transition';
-            runIbplConversion();
-        });
-
-        // Preset loader
-        window.loadPreset = function(presetText) {
-            singleInput.value = presetText;
-            runSingleConversion();
-            showToast('Preset loaded!');
-        };
-
-        // Tab Switchers
-        const singleModeBtn = document.getElementById('singleModeBtn');
-        const bulkModeBtn = document.getElementById('bulkModeBtn');
-        const ibplModeBtn = document.getElementById('ibplModeBtn');
-        const singleView = document.getElementById('singleView');
-        const bulkView = document.getElementById('bulkView');
-        const ibplView = document.getElementById('ibplView');
-        const presetContainer = document.getElementById('presetContainer');
-
-        const activeTabClass = "px-4 py-2 text-sm font-semibold rounded-lg bg-brand-600 text-white shadow-sm transition";
-        const inactiveTabClass = "px-4 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200 transition";
-
-        singleModeBtn.addEventListener('click', () => {
-            singleView.classList.remove('hidden');
-            bulkView.classList.add('hidden');
-            ibplView.classList.add('hidden');
-            presetContainer.classList.remove('hidden');
-            singleModeBtn.className = activeTabClass;
-            bulkModeBtn.className = inactiveTabClass;
-            ibplModeBtn.className = inactiveTabClass;
-        });
-
-        bulkModeBtn.addEventListener('click', () => {
-            bulkView.classList.remove('hidden');
-            singleView.classList.add('hidden');
-            ibplView.classList.add('hidden');
-            presetContainer.classList.add('hidden');
-            bulkModeBtn.className = activeTabClass;
-            singleModeBtn.className = inactiveTabClass;
-            ibplModeBtn.className = inactiveTabClass;
-            runBulkConversion();
-        });
-
-        ibplModeBtn.addEventListener('click', () => {
-            ibplView.classList.remove('hidden');
-            singleView.classList.add('hidden');
-            bulkView.classList.add('hidden');
-            presetContainer.classList.add('hidden');
-            ibplModeBtn.className = activeTabClass;
-            singleModeBtn.className = inactiveTabClass;
-            bulkModeBtn.className = inactiveTabClass;
-            runIbplConversion();
-        });
-
-        // Toggle Dark/Light Theme
-        document.getElementById('themeToggleBtn').addEventListener('click', () => {
-            document.documentElement.classList.toggle('dark');
-        });
-
-        // Initialize default views
-        runSingleConversion();
-        runIbplConversion();
     </script>
 </body>
 </html>
