@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URBN PH Realization Debugging</title>
+    <title>String Code Converter & SQL Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -40,9 +40,10 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight flex items-center gap-2">
-                        URBN PH Realization Debugging
+                        Code Converter & SQL Generator
+                        <span class="text-xs bg-brand-500/20 text-brand-500 border border-brand-500/30 px-2 py-0.5 rounded-full font-mono">v2.3.0</span>
                     </h1>
-                    <p class="text-xs text-slate-400">URBN PH Realization Debugging Query Builder</p>
+                    <p class="text-xs text-slate-400">Open-Source PH Key Transformer & IBPL Query Debugging Tool</p>
                 </div>
             </div>
             
@@ -58,17 +59,20 @@
     <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 space-y-6">
 
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-800/40 border border-slate-800 p-4 rounded-xl">
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
                 <button id="singleModeBtn" class="px-4 py-2 text-sm font-semibold rounded-lg bg-brand-600 text-white shadow-sm transition">
-                    <i class="fa-solid fa-bolt mr-1.5"></i> Single Convert
+                    <i class="fa-solid fa-bolt mr-1.5"></i> Single Convert & SQL
                 </button>
                 <button id="bulkModeBtn" class="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200 transition">
                     <i class="fa-solid fa-list-check mr-1.5"></i> Bulk Batch Generator
                 </button>
+                <button id="ibplModeBtn" class="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200 transition">
+                    <i class="fa-solid fa-code-branch mr-1.5"></i> IBPL Select Converter
+                </button>
             </div>
-            <div class="flex items-center gap-2 text-xs text-slate-400">
+            <div id="presetContainer" class="flex items-center gap-2 text-xs text-slate-400">
                 <span class="font-medium">Preset:</span>
-                <button onclick="loadPreset('PH-4111-SC-33-FY27 OCT-1786459079')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 hover:text-slate-200 border border-slate-700 rounded transition font-mono">Style Color</button>
+                <button onclick="loadPreset('PH-4111-SC-33-FY27 OCT-1786459079')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 hover:text-slate-200 border border-slate-700 rounded transition font-mono">SC Format Sample</button>
             </div>
         </div>
 
@@ -79,7 +83,7 @@
                     <div>
                         <div class="flex justify-between items-center mb-3">
                             <label class="block text-sm font-semibold text-slate-300">Input String</label>
-                            <span class="text-xs text-slate-500 font-mono">(pass the Style Color Name)</span>
+                            <span class="text-xs text-slate-500 font-mono">SC Code</span>
                         </div>
                         <div class="relative">
                             <input type="text" id="singleInput" value="PH-4111-SC-33-FY27 OCT-1786459079" placeholder="e.g. PH-4111-SC-33-FY27 OCT-1786459079" class="mono w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition text-slate-100 placeholder-slate-600">
@@ -113,12 +117,12 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Query 1: PH Key Query (L1Key is the style key that is sent)-->
+                <!-- Query 1: PH Key Query -->
                 <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
                     <div>
                         <div class="flex justify-between items-center mb-3">
                             <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded text-xs font-semibold">Query 1 (BDP workspace)</span>
+                                <span class="px-2 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded text-xs font-semibold">Query 1</span>
                                 <h3 class="text-sm font-semibold text-slate-200">PH Key Query</h3>
                             </div>
                             <button id="copyQ1Btn" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5">
@@ -129,12 +133,12 @@
                     </div>
                 </div>
 
-                <!-- Query 2: Product Master Query (o9_style_key is what was received)-->
+                <!-- Query 2: Product Master Query -->
                 <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
                     <div>
                         <div class="flex justify-between items-center mb-3">
                             <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-xs font-semibold">Query 2 (BDP workspace)</span>
+                                <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-xs font-semibold">Query 2</span>
                                 <h3 class="text-sm font-semibold text-slate-200">Product Master Query</h3>
                             </div>
                             <button id="copyQ2Btn" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-2.5 py-1.5 rounded-lg transition flex items-center gap-1.5">
@@ -161,69 +165,103 @@
                 <div class="p-3.5 bg-slate-900/80 border border-purple-500/20 rounded-xl text-slate-300 text-xs leading-relaxed flex gap-3">
                     <i class="fa-solid fa-circle-info text-purple-400 text-sm mt-0.5 shrink-0"></i>
                     <div>
-                        <span class="font-semibold text-purple-300">Debugging Guide:</span> Pass the <code class="text-purple-200 bg-purple-950/80 border border-purple-500/30 px-1 py-0.5 rounded font-mono">q_sty_snum</code> value retrieved from <strong>Query 2</strong> into this query and run it within the debugging workspace. Compare the output against <code class="text-purple-200 bg-purple-950/80 border border-purple-500/30 px-1 py-0.5 rounded font-mono">o9_style_level_key</code>, if they do not match, the placeholder color has been created under an existing style rather than its original placeholder style.
+                        <span class="font-semibold text-purple-300">Debugging Guide:</span> Pass the <code class="text-purple-200 bg-purple-950/80 border border-purple-500/30 px-1 py-0.5 rounded font-mono">q_sty_snum</code> value retrieved from <strong>Query 2</strong> into this query and run it within the debugging workspace. Compare the output against <code class="text-purple-200 bg-purple-950/80 border border-purple-500/30 px-1 py-0.5 rounded font-mono">o9_style_level_key</code>—if they do not match, the placeholder color has been assigned to an existing style rather than its original placeholder style.
                     </div>
                 </div>
 
                 <!-- Query 3 Code Display -->
                 <textarea id="query3Output" readonly rows="2" class="mono w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-purple-300 font-medium text-xs leading-relaxed resize-none outline-none select-all">select [Item].[L1].[q_sty_snum];</textarea>
-                <img src="debug_key_column.png" alt="Debugging Workspace Key Column" class="max-w-md rounded-lg border border-slate-700 shadow-md">
+
+                <!-- Visual Guide for Debugging Workspace Key Column -->
+                <div class="pt-2">
+                    <p class="text-xs text-slate-400 mb-2 font-medium"><i class="fa-solid fa-eye text-purple-400 mr-1.5"></i>Reference: Locate the <span class="text-amber-300 font-semibold">Key</span> column in the Grid view after executing Query 3:</p>
+                    <div class="inline-block bg-white p-2.5 rounded-xl border border-slate-700 shadow-lg overflow-hidden">
+                        <svg viewBox="0 0 460 155" class="w-full max-w-md h-auto font-sans" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Query Bar -->
+                            <rect x="0" y="0" width="460" height="32" fill="#f8fafc" stroke="#94a3b8" stroke-width="1"/>
+                            <rect x="0" y="0" width="32" height="32" fill="#e2e8f0"/>
+                            <text x="16" y="21" font-size="12" fill="#475569" text-anchor="middle" font-family="monospace">1</text>
+                            <text x="44" y="21" font-size="13" font-family="monospace">
+                                <tspan fill="#2563eb">select</tspan>
+                                <tspan fill="#0f172a"> [Item].[L1].[</tspan>
+                                <tspan fill="#4f46e5">10041110212060000011</tspan>
+                                <tspan fill="#0f172a">];</tspan>
+                            </text>
+                            <!-- Tabs -->
+                            <rect x="0" y="46" width="56" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+                            <rect x="0" y="46" width="56" height="3" fill="#0f172a"/>
+                            <text x="28" y="65" font-size="12" font-weight="600" fill="#0f172a" text-anchor="middle">Grid</text>
+                            <text x="86" y="65" font-size="12" fill="#64748b" text-anchor="middle">JSON</text>
+                            <text x="148" y="65" font-size="12" fill="#64748b" text-anchor="middle">History:</text>
+                            <line x1="0" y1="74" x2="460" y2="74" stroke="#cbd5e1" stroke-width="1"/>
+                            <!-- Grid Table Header -->
+                            <rect x="2" y="92" width="130" height="30" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+                            <text x="12" y="112" font-size="13" font-weight="600" fill="#1e293b">Key</text>
+                            <polygon points="112,102 124,102 119,108 119,115 117,115 117,108" fill="#1e293b"/>
+                            <rect x="132" y="92" width="326" height="30" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+                            <text x="142" y="112" font-size="13" font-weight="600" fill="#1e293b">Name</text>
+                            <polygon points="438,102 450,102 445,108 445,115 443,115 443,108" fill="#1e293b"/>
+                            <!-- Highlight Box around Key -->
+                            <rect x="2" y="91" width="130" height="32" fill="none" stroke="#facc15" stroke-width="4" rx="2"/>
+                            <!-- Grid Data Row -->
+                            <rect x="2" y="122" width="130" height="30" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+                            <text x="12" y="142" font-size="13" fill="#0f172a" font-family="monospace">1186780</text>
+                            <rect x="132" y="122" width="326" height="30" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+                            <text x="142" y="142" font-size="13" fill="#0f172a" font-family="monospace">10041110212060000011</text>
+                        </svg>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div id="bulkView" class="hidden space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Bulk Input -->
-                <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-5 flex flex-col">
-                    <div class="flex justify-between items-center mb-3">
-                        <label class="block text-sm font-semibold text-slate-300">Bulk Inputs (One per line)</label>
-                        <span id="lineCount" class="text-xs text-slate-500 font-mono">2 items</span>
-                    </div>
-                    <textarea id="bulkInput" rows="8" class="mono w-full p-4 bg-slate-900 border border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none resize-none text-slate-100 text-xs leading-relaxed" placeholder="Enter strings here, one per line...">PH-4111-SC-33-FY27 OCT-1786459079
-PH-8821-SC-12-FY26 NOV-8819203912</textarea>
-                </div>
-
-                <!-- Bulk Keys Output -->
-                <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center mb-3">
-                            <label class="block text-sm font-semibold text-brand-400">Converted Keys Output</label>
-                            <button id="copyBulkKeysBtn" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
-                                <i class="fa-regular fa-copy"></i> Copy Keys
-                            </button>
-                        </div>
-                        <textarea id="bulkKeysOutput" readonly rows="8" class="mono w-full p-4 bg-slate-950 border border-brand-500/40 rounded-xl text-brand-400 font-medium text-xs leading-relaxed resize-none outline-none select-all"></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bulk SQL Queries -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Bulk Query 1 -->
-                <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center mb-3">
-                            <span class="text-xs font-semibold text-amber-400">Batch PH Key Queries (IN Clause)</span>
-                            <button id="copyBulkQ1Btn" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
-                                <i class="fa-regular fa-copy"></i> Copy SQL 1
-                            </button>
-                        </div>
-                        <textarea id="bulkQ1Output" readonly rows="6" class="mono w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-amber-300 font-medium text-xs leading-relaxed resize-none outline-none select-all"></textarea>
-                    </div>
-                </div>
-
-                <!-- Bulk Query 2 -->
-                <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center mb-3">
-                            <span class="text-xs font-semibold text-emerald-400">Batch Product Master Queries (IN Clause)</span>
-                            <button id="copyBulkQ2Btn" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
-                                <i class="fa-regular fa-copy"></i> Copy SQL 2
-                            </button>
-                        </div>
                         <textarea id="bulkQ2Output" readonly rows="6" class="mono w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-emerald-300 font-medium text-xs leading-relaxed resize-none outline-none select-all"></textarea>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- IBPL Select Converter View -->
+        <div id="ibplView" class="hidden space-y-6">
+            <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-5 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                            <span class="px-2 py-0.5 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded text-xs">IBPL Parser</span>
+                            Input IBPL <code class="text-brand-300">select (...) where {...};</code> Statement
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">Converts <code class="text-slate-300">where {...}</code> member filters into cross-joins (<code class="text-slate-300">*</code>) and consolidates measure conditions into the measure tuple.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="loadIbplSampleBtn" class="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg transition">
+                            <i class="fa-solid fa-flask mr-1 text-brand-400"></i> Load Sample
+                        </button>
+                        <button id="clearIbplBtn" class="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700 rounded-lg transition">
+                            <i class="fa-solid fa-eraser mr-1"></i> Clear
+                        </button>
+                    </div>
+                </div>
+
+                <textarea id="ibplInput" rows="5" class="mono w-full p-4 bg-slate-900 border border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-slate-100 text-xs leading-relaxed" placeholder="Paste your select (...) where {...}; IBPL query here...">select (&CWV * {Measure.[Export_Validation_SC],Measure.[Intermittent_Measure_SC]}) where {&StyleColor.Filter(#.Name in {[100012306456900000190010],[PH-0123-SC-E19-1-FY28 APR-1795105082],[PH-0123-SC-E19-2-FY28 APR-1795105082]}) , [Sales Domain].[Sales Planning Channel].Filter(#.Name in {[100002],[100001]}) , [Receipt Drop].[Receipt Drop].Filter(#.Name in {[R1]}) , [Time].[Planning Month].Filter(#.Name in {[20281103]}) , &SellingSeasons, Measure.[Intermittent_Measure_SC] == true || Measure.[Export_Validation_SC] == "Validation Failed" || Measure.[Export_In_Progress_SC] == true};</textarea>
+            </div>
+
+            <!-- Converted Output Card -->
+            <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-5 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-xs font-semibold">Converted Query</span>
+                        <span id="ibplStatusBadge" class="text-xs text-slate-400">Ready</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="inline-flex rounded-lg bg-slate-900 p-0.5 border border-slate-700">
+                            <button id="ibplCompactBtn" class="px-2.5 py-1 text-xs font-medium rounded-md bg-brand-600 text-white transition">Compact</button>
+                            <button id="ibplFormattedBtn" class="px-2.5 py-1 text-xs font-medium rounded-md text-slate-400 hover:text-slate-200 transition">Multi-line</button>
+                        </div>
+                        <button id="copyIbplBtn" class="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-500 text-white font-medium text-xs rounded-lg transition flex items-center gap-1.5 shadow-lg shadow-brand-600/20 active:scale-95">
+                            <i class="fa-regular fa-copy"></i> Copy Query
+                        </button>
+                    </div>
+                </div>
+
+                <textarea id="ibplOutput" readonly rows="6" class="mono w-full p-4 bg-slate-950 border border-emerald-500/40 rounded-xl text-emerald-300 font-medium text-xs leading-relaxed outline-none select-all"></textarea>
             </div>
         </div>
 
@@ -301,31 +339,172 @@ PH-8821-SC-12-FY26 NOV-8819203912</textarea>
             return `Select distinct o9_color_level_key,stylecolor_snum, o9_style_level_key, q_sty_snum from std_prod.std_global_all_product where o9_color_level_key = '${transformedKey}';`;
         }
 
-        // UI Element References
-        const singleInput = document.getElementById('singleInput');
-        const singleOutput = document.getElementById('singleOutput');
-        const query1Output = document.getElementById('query1Output');
-        const query2Output = document.getElementById('query2Output');
-        const query3Output = document.getElementById('query3Output');
+        // ==========================================
+        // IBPL Select Where -> Cross-Join Converter
+        // ==========================================
+        const SAMPLE_IBPL_QUERY = `select (&CWV * {Measure.[Export_Validation_SC],Measure.[Intermittent_Measure_SC]}) where {&StyleColor.Filter(#.Name in {[100012306456900000190010],[PH-0123-SC-E19-1-FY28 APR-1795105082],[PH-0123-SC-E19-2-FY28 APR-1795105082]}) , [Sales Domain].[Sales Planning Channel].Filter(#.Name in {[100002],[100001]}) , [Receipt Drop].[Receipt Drop].Filter(#.Name in {[R1]}) , [Time].[Planning Month].Filter(#.Name in {[20281103]}) , &SellingSeasons, Measure.[Intermittent_Measure_SC] == true || Measure.[Export_Validation_SC] == "Validation Failed" || Measure.[Export_In_Progress_SC] == true};`;
 
-        const bulkInput = document.getElementById('bulkInput');
-        const bulkKeysOutput = document.getElementById('bulkKeysOutput');
-        const bulkQ1Output = document.getElementById('bulkQ1Output');
-        const bulkQ2Output = document.getElementById('bulkQ2Output');
-        const lineCount = document.getElementById('lineCount');
+        let ibplFormatMode = 'compact'; // 'compact' | 'multiline'
 
-        // Single Mode Converter Trigger
-        function runSingleConversion() {
-            const val = singleInput.value;
-            const phString = formatPHString(val);
-            const transformedKey = transformString(val);
+        // Splits a string by a delimiter character only at top-level nesting depth
+        function splitTopLevel(str, delimiter) {
+            const parts = [];
+            let current = '';
+            let curly = 0;
+            let square = 0;
+            let paren = 0;
+            let inDoubleQuote = false;
+            let inSingleQuote = false;
 
-            singleOutput.value = transformedKey;
-            query1Output.value = generateQuery1(phString);
-            query2Output.value = generateQuery2(transformedKey);
-            query3Output.value = `select [Item].[L1].[q_sty_snum];`;
+            for (let i = 0; i < str.length; i++) {
+                const ch = str[i];
+                const prev = i > 0 ? str[i - 1] : '';
+
+                if (ch === '"' && !inSingleQuote && prev !== '\\') {
+                    inDoubleQuote = !inDoubleQuote;
+                } else if (ch === "'" && !inDoubleQuote && prev !== '\\') {
+                    inSingleQuote = !inSingleQuote;
+                } else if (!inDoubleQuote && !inSingleQuote) {
+                    if (ch === '{') curly++;
+                    else if (ch === '}') curly = Math.max(0, curly - 1);
+                    else if (ch === '[') square++;
+                    else if (ch === ']') square = Math.max(0, square - 1);
+                    else if (ch === '(') paren++;
+                    else if (ch === ')') paren = Math.max(0, paren - 1);
+                }
+
+                if (!inDoubleQuote && !inSingleQuote && curly === 0 && square === 0 && paren === 0 && ch === delimiter) {
+                    parts.push(current.trim());
+                    current = '';
+                } else {
+                    current += ch;
+                }
+            }
+            if (current.trim()) {
+                parts.push(current.trim());
+            }
+            return parts;
         }
 
+        // Finds matching closing delimiter starting from openIndex
+        function findMatchingClose(str, openIndex, openChar, closeChar) {
+            let depth = 0;
+            let inDoubleQuote = false;
+            let inSingleQuote = false;
+
+            for (let i = openIndex; i < str.length; i++) {
+                const ch = str[i];
+                const prev = i > 0 ? str[i - 1] : '';
+
+                if (ch === '"' && !inSingleQuote && prev !== '\\') {
+                    inDoubleQuote = !inDoubleQuote;
+                } else if (ch === "'" && !inDoubleQuote && prev !== '\\') {
+                    inSingleQuote = !inSingleQuote;
+                } else if (!inDoubleQuote && !inSingleQuote) {
+                    if (ch === openChar) depth++;
+                    else if (ch === closeChar) {
+                        depth--;
+                        if (depth === 0) return i;
+                    }
+                }
+            }
+            return -1;
+        }
+
+        function convertIbplQuery(rawInput) {
+            const trimmed = (rawInput || '').trim();
+            if (!trimmed) {
+                return { output: '', error: 'Enter an IBPL select statement above.' };
+            }
+
+            const selectMatch = trimmed.match(/^select\s*\(/i);
+            if (!selectMatch) {
+                return { output: '', error: 'Query must begin with select (...)' };
+            }
+
+            const selectOpenParen = trimmed.indexOf('(');
+            const selectCloseParen = findMatchingClose(trimmed, selectOpenParen, '(', ')');
+            if (selectCloseParen === -1) {
+                return { output: '', error: 'Unmatched parenthesis in select (...)' };
+            }
+
+            const selectInner = trimmed.slice(selectOpenParen + 1, selectCloseParen).trim();
+            const afterSelect = trimmed.slice(selectCloseParen + 1).trim();
+
+            // Check if there is a where {...} block
+            const whereMatch = afterSelect.match(/^where\s*\{/i);
+            if (!whereMatch) {
+                return { output: trimmed, error: 'No where {...} block found to convert.' };
+            }
+
+            const whereOpenBrace = afterSelect.indexOf('{');
+            const whereCloseBrace = findMatchingClose(afterSelect, whereOpenBrace, '{', '}');
+            if (whereCloseBrace === -1) {
+                return { output: '', error: 'Unmatched curly brace in where {...}' };
+            }
+
+            const whereInner = afterSelect.slice(whereOpenBrace + 1, whereCloseBrace).trim();
+
+            // 1. Parse select (...) factors
+            const selectFactors = splitTopLevel(selectInner, '*');
+            const baseFactors = [];
+            const uniqueMeasures = [];
+
+            const addMeasure = (m) => {
+                const clean = m.trim();
+                if (clean && !uniqueMeasures.includes(clean)) {
+                    uniqueMeasures.push(clean);
+                }
+            };
+
+            for (const factor of selectFactors) {
+                if (factor.startsWith('{') && factor.endsWith('}') && /Measure\.\[[^\]]+\]/i.test(factor)) {
+                    const innerTuple = factor.slice(1, -1);
+                    const items = splitTopLevel(innerTuple, ',');
+                    items.forEach(item => addMeasure(item));
+                } else {
+                    baseFactors.push(factor);
+                }
+            }
+
+            // 2. Parse top-level where {...} clauses
+            const whereItems = splitTopLevel(whereInner, ',');
+            const filterExpressions = [];
+            const booleanOpRegex = /(==|!=|>=|<=|>|<|\|\||&&)/;
+
+            for (const item of whereItems) {
+                if (booleanOpRegex.test(item)) {
+                    // Extract any Measure.[...] references inside boolean condition
+                    const measureMatches = item.match(/Measure\.\[[^\]]+\]/g);
+                    if (measureMatches) {
+                        measureMatches.forEach(m => addMeasure(m));
+                    }
+                } else {
+                    filterExpressions.push(item);
+                }
+            }
+
+            // 3. Reconstruct cross-join query
+            const allParts = [...baseFactors, ...filterExpressions];
+            if (uniqueMeasures.length > 0) {
+                // Format measure tuple cleanly
+                const measureTuple = `{${uniqueMeasures.join(', ')}}`;
+                allParts.push(measureTuple);
+            }
+
+            let finalQuery = '';
+            if (ibplFormatMode === 'multiline') {
+                finalQuery = `select (\n  ${allParts.join('\n  * ')}\n);`;
+            } else {
+                finalQuery = `select (${allParts.join(' * ')});`;
+            }
+
+            return {
+                output: finalQuery,
+                stats: `${filterExpressions.length} filter(s) merged • ${uniqueMeasures.length} unique measure(s)`
+            };
+        }
+// ... existing code ... -->
         // Bulk Mode Converter Trigger
         function runBulkConversion() {
             const lines = bulkInput.value.split('\n').map(l => l.trim()).filter(Boolean);
@@ -339,52 +518,61 @@ PH-8821-SC-12-FY26 NOV-8819203912</textarea>
             const phInList = phStrings.map(s => `'${s}'`).join(',\n  ');
             const keyInList = transformedKeys.map(k => `'${k}'`).join(',\n  ');
 
-            bulkQ1Output.value = `Select Item.[Planning Item], Item.[L1Key], Item.[L1]\nfrom urbnna.item_ph\nwhere Item.[Planning Item] IN (\n  ${phInList}\n);`;
+            bulkQ1Output.value = `Select \`Item.[Planning Item]\`, \`Item.[L1Key]\`, \`Item.[L1]\`\nfrom urbnna.item_ph\nwhere \`Item.[Planning Item]\` IN (\n  ${phInList}\n);`;
             bulkQ2Output.value = `Select distinct o9_color_level_key, stylecolor_snum, o9_style_level_key, q_sty_snum\nfrom std_prod.std_global_all_product\nwhere o9_color_level_key IN (\n  ${keyInList}\n);`;
         }
 
-        // Notification Toast Handler
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toastMsg');
-            toastMsg.textContent = message;
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 2500);
+        // IBPL Converter Trigger
+        const ibplInput = document.getElementById('ibplInput');
+        const ibplOutput = document.getElementById('ibplOutput');
+        const ibplStatusBadge = document.getElementById('ibplStatusBadge');
+
+        function runIbplConversion() {
+            const result = convertIbplQuery(ibplInput.value);
+            ibplOutput.value = result.output;
+            if (result.error) {
+                ibplStatusBadge.textContent = result.error;
+                ibplStatusBadge.className = 'text-xs text-amber-400';
+            } else {
+                ibplStatusBadge.textContent = result.stats || 'Converted';
+                ibplStatusBadge.className = 'text-xs text-emerald-400';
+            }
         }
-
-        // Helper to copy text into system clipboard
-        function copyToClipboard(text, label) {
-            if (!text) return;
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            showToast(`${label || 'Content'} copied to clipboard!`);
-        }
-
-        singleInput.addEventListener('input', runSingleConversion);
-        bulkInput.addEventListener('input', runBulkConversion);
-
-        document.getElementById('clearSingleBtn').addEventListener('click', () => {
-            singleInput.value = '';
-            runSingleConversion();
-            singleInput.focus();
-        });
-
-        // Copy button handlers
-        document.getElementById('copySingleBtn').addEventListener('click', () => copyToClipboard(singleOutput.value, 'Transformed Key'));
-        document.getElementById('copyQ1Btn').addEventListener('click', () => copyToClipboard(query1Output.value, 'Query 1'));
-        document.getElementById('copyQ2Btn').addEventListener('click', () => copyToClipboard(query2Output.value, 'Query 2'));
-        document.getElementById('copyQ3Btn').addEventListener('click', () => copyToClipboard(query3Output.value, 'Query 3'));
-        
+// ... existing code ... -->
         document.getElementById('copyBulkKeysBtn').addEventListener('click', () => copyToClipboard(bulkKeysOutput.value, 'Bulk Keys'));
         document.getElementById('copyBulkQ1Btn').addEventListener('click', () => copyToClipboard(bulkQ1Output.value, 'Bulk SQL Query 1'));
         document.getElementById('copyBulkQ2Btn').addEventListener('click', () => copyToClipboard(bulkQ2Output.value, 'Bulk SQL Query 2'));
+
+        // IBPL Event Listeners
+        ibplInput.addEventListener('input', runIbplConversion);
+        document.getElementById('copyIbplBtn').addEventListener('click', () => copyToClipboard(ibplOutput.value, 'Converted IBPL Query'));
+        document.getElementById('loadIbplSampleBtn').addEventListener('click', () => {
+            ibplInput.value = SAMPLE_IBPL_QUERY;
+            runIbplConversion();
+            showToast('Sample IBPL query loaded!');
+        });
+        document.getElementById('clearIbplBtn').addEventListener('click', () => {
+            ibplInput.value = '';
+            runIbplConversion();
+            ibplInput.focus();
+        });
+
+        const ibplCompactBtn = document.getElementById('ibplCompactBtn');
+        const ibplFormattedBtn = document.getElementById('ibplFormattedBtn');
+
+        ibplCompactBtn.addEventListener('click', () => {
+            ibplFormatMode = 'compact';
+            ibplCompactBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md bg-brand-600 text-white transition';
+            ibplFormattedBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md text-slate-400 hover:text-slate-200 transition';
+            runIbplConversion();
+        });
+
+        ibplFormattedBtn.addEventListener('click', () => {
+            ibplFormatMode = 'multiline';
+            ibplFormattedBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md bg-brand-600 text-white transition';
+            ibplCompactBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md text-slate-400 hover:text-slate-200 transition';
+            runIbplConversion();
+        });
 
         // Preset loader
         window.loadPreset = function(presetText) {
@@ -396,22 +584,45 @@ PH-8821-SC-12-FY26 NOV-8819203912</textarea>
         // Tab Switchers
         const singleModeBtn = document.getElementById('singleModeBtn');
         const bulkModeBtn = document.getElementById('bulkModeBtn');
+        const ibplModeBtn = document.getElementById('ibplModeBtn');
         const singleView = document.getElementById('singleView');
         const bulkView = document.getElementById('bulkView');
+        const ibplView = document.getElementById('ibplView');
+        const presetContainer = document.getElementById('presetContainer');
+
+        const activeTabClass = "px-4 py-2 text-sm font-semibold rounded-lg bg-brand-600 text-white shadow-sm transition";
+        const inactiveTabClass = "px-4 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200 transition";
 
         singleModeBtn.addEventListener('click', () => {
             singleView.classList.remove('hidden');
             bulkView.classList.add('hidden');
-            singleModeBtn.className = "px-4 py-2 text-sm font-semibold rounded-lg bg-brand-600 text-white shadow-sm transition";
-            bulkModeBtn.className = "px-4 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200 transition";
+            ibplView.classList.add('hidden');
+            presetContainer.classList.remove('hidden');
+            singleModeBtn.className = activeTabClass;
+            bulkModeBtn.className = inactiveTabClass;
+            ibplModeBtn.className = inactiveTabClass;
         });
 
         bulkModeBtn.addEventListener('click', () => {
             bulkView.classList.remove('hidden');
             singleView.classList.add('hidden');
-            bulkModeBtn.className = "px-4 py-2 text-sm font-semibold rounded-lg bg-brand-600 text-white shadow-sm transition";
-            singleModeBtn.className = "px-4 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200 transition";
+            ibplView.classList.add('hidden');
+            presetContainer.classList.add('hidden');
+            bulkModeBtn.className = activeTabClass;
+            singleModeBtn.className = inactiveTabClass;
+            ibplModeBtn.className = inactiveTabClass;
             runBulkConversion();
+        });
+
+        ibplModeBtn.addEventListener('click', () => {
+            ibplView.classList.remove('hidden');
+            singleView.classList.add('hidden');
+            bulkView.classList.add('hidden');
+            presetContainer.classList.add('hidden');
+            ibplModeBtn.className = activeTabClass;
+            singleModeBtn.className = inactiveTabClass;
+            bulkModeBtn.className = inactiveTabClass;
+            runIbplConversion();
         });
 
         // Toggle Dark/Light Theme
@@ -419,8 +630,9 @@ PH-8821-SC-12-FY26 NOV-8819203912</textarea>
             document.documentElement.classList.toggle('dark');
         });
 
-        // Initialize default view
+        // Initialize default views
         runSingleConversion();
+        runIbplConversion();
     </script>
 </body>
 </html>
